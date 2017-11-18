@@ -1,27 +1,50 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"log"
-	"os"
+
+	"github.com/spf13/cobra"
 )
 
 func main() {
-	image := flag.String("image", "", "image to get info on e.g. library/nginx or mysql/mysql-server")
-	tag := flag.String("tag", "", "tag of the image to get manifest on e.g. 1.2 or latest")
-	flag.Parse()
+	/*
+	 *docker_download layers
+	 */
 
-	if len(os.Args) < 3 || len(*image) == 0 || len(*tag) == 0 {
-		flag.Usage()
-		os.Exit(1)
+	var cmdLayers = &cobra.Command{
+		Use:   "layers",
+		Short: "Get layers info about specified image",
+		Long: `Downloads docker layers from specified image
+at specified tag and prints them on screen.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			imageF := cmd.Flag("image")
+			tagF := cmd.Flag("tag")
+			layers(imageF.Value.String(), tagF.Value.String())
+		},
 	}
 
-	manifest, err := getManifest(*image, *tag)
+	cmdLayers.Example = "docker_download layers --image mysql/mysql-server --tag 5.6.23"
+
+	/*
+	 *root
+	 */
+
+	var rootCmd = &cobra.Command{Use: "docker_download"}
+	rootCmd.PersistentFlags().String("image", "", "image to get info/image on from docker registry")
+	rootCmd.MarkPersistentFlagRequired("image")
+	rootCmd.PersistentFlags().String("tag", "", "tag of the image to get info/imageimage on from docker registry")
+	rootCmd.MarkPersistentFlagRequired("tag")
+
+	rootCmd.AddCommand(cmdLayers)
+	rootCmd.Execute()
+}
+
+func layers(image, tag string) {
+	manifest, err := getManifest(image, tag)
 	if err != nil {
 		log.Fatal(err)
 	}
-	//fmt.Printf("%+v\n", jsonManResp)
 
 	fmt.Printf("SchemaVersion: %d\n", manifest.SchemaVersion)
 
