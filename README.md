@@ -6,7 +6,25 @@ To build:
 
 How to use:
 
-    ./docker_download -image=mysql/mysql-server -tag=5.6.23
+    Usage:
+      docker_download [command]
+
+    Available Commands:
+      help        Help about any command
+      layers      Get layers info about specified image
+      pull        Downloads layers from specified image
+
+    Flags:
+      -h, --help           help for docker_download
+          --image string   image to get info/image on from docker registry
+          --tag string     tag of the image to get info/imageimage on from docker registry
+
+    Use "docker_download [command] --help" for more information about a command.
+
+
+Layers:
+
+    ./docker_download layers --image=mysql/mysql-server --tag=5.6.23
 
     SchemaVersion: 1
     FsLayers
@@ -35,3 +53,15 @@ How to use:
     9 8f0a27825a9abd867f33b50e6583827d9727fcfa5d46ff5fda36c4c92dcfe2b9 /bin/sh -c #(nop) ADD file:919fbca9692a1c56f625d30a09e2727549c53a8a14859cca5b706b266cca9e46 in /
     10 ad98bd7101f267fed07cd488f28ec82e2059a492933d32679c3b7320479ecef0 /bin/sh -c #(nop) MAINTAINER Oracle Linux Product Team <ol-ovm-info_ww@oracle.com>
     11 511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158
+
+Pull:
+
+     ./docker_download pull --image mysql/mysql-server --tag 5.6.23
+     Downloading https://registry.hub.docker.com/v2/mysql/mysql-server/blobs/sha256:a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4...
+     Layer sha256:a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4 with size 32B
+     Downloading https://registry.hub.docker.com/v2/mysql/mysql-server/blobs/sha256:c45bb0e60064f776fdbee153e8c57ee9781273427dfc045a9e4f26fe230a33bb...
+     Layer sha256:c45bb0e60064f776fdbee153e8c57ee9781273427dfc045a9e4f26fe230a33bb with size 1300B
+     Downloading https://registry.hub.docker.com/v2/mysql/mysql-server/blobs/sha256:adbc50742107a7745478e1840f45670164826d8c6c1e9f50e2e6e645d8386a11...
+     Layer sha256:adbc50742107a7745478e1840f45670164826d8c6c1e9f50e2e6e645d8386a11 with size 37027670B
+     Downloading https://registry.hub.docker.com/v2/mysql/mysql-server/blobs/sha256:e15c386793c2cc0229c9bc91595b248f2702f633d72213caedb8b119019508c4...
+     Layer sha256:e15c386793c2cc0229c9bc91595b248f2702f633d72213caedb8b119019508c4 with size 70978368B

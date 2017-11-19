@@ -54,13 +54,8 @@ func checkIfImageExists(token, repo, tag string) error {
 	return nil
 }
 
-func getManifest(repo, tag string) (ManifestResponse, error) {
-	token, err := getAuthToken(repo)
-	if err != nil {
-		return ManifestResponse{}, fmt.Errorf("Couldn't get auth token: %v", err)
-	}
-
-	if err = checkIfImageExists(token, repo, tag); err != nil {
+func getManifest(token, repo, tag string) (ManifestResponse, error) {
+	if err := checkIfImageExists(token, repo, tag); err != nil {
 		return ManifestResponse{}, err
 	}
 
@@ -94,6 +89,10 @@ func getManifest(repo, tag string) (ManifestResponse, error) {
 	return jsonManResp, nil
 }
 
+type FsLayers []struct {
+	BlobSum string `json:"blobSum"`
+}
+
 // ManifestResponse is the json response from manifests API v2
 type ManifestResponse struct {
 	Name          string `json:"name"`
@@ -101,9 +100,7 @@ type ManifestResponse struct {
 	Architecture  string `json:"architecture"`
 	SchemaVersion int    `json:"schemaVersion"`
 
-	FsLayers []struct {
-		BlobSum string `json:"blobSum"`
-	} `json:"fsLayers"`
+	FsLayers `json:"fsLayers"`
 
 	History []struct {
 		V1CompatibilityRaw string `json:"v1Compatibility"`
