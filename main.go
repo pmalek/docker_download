@@ -26,7 +26,7 @@ at specified tag and prints them on screen.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			image := args[0]
 			tagF := cmd.Flag("tag")
-			layers(image, tagF.Value.String())
+			layers(&onlineTokenGetter{}, image, tagF.Value.String())
 		},
 	}
 	cmdLayers.Example = appName + " layers mysql/mysql-server --tag 5.6.23"
@@ -45,7 +45,7 @@ by repo name and tag name in the current directory.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			image := args[0]
 			tagF := cmd.Flag("tag")
-			pull(image, tagF.Value.String())
+			pull(&onlineTokenGetter{}, image, tagF.Value.String())
 		},
 	}
 	cmdPull.Example = appName + " pull mysql/mysql-server --tag 5.6.23"
@@ -54,7 +54,7 @@ by repo name and tag name in the current directory.`,
 	 *root
 	 */
 
-	var rootCmd = &cobra.Command{Use: "docker_download"}
+	var rootCmd = &cobra.Command{Use: appName}
 	rootCmd.PersistentFlags().String("tag", "", "tag of the image to get info on from docker registry")
 	rootCmd.MarkPersistentFlagRequired("tag")
 
@@ -62,13 +62,8 @@ by repo name and tag name in the current directory.`,
 	rootCmd.Execute()
 }
 
-func layers(repo, tag string) {
-	token, err := getAuthToken(repo)
-	if err != nil {
-		log.Fatalf("Couldn't get auth token: %v", err)
-	}
-
-	manifest, err := getManifest(token, repo, tag)
+func layers(t tokenGetter, repo, tag string) {
+	manifest, err := getManifest(t, repo, tag)
 	if err != nil {
 		log.Fatalf("Couldn't get the manifest: %v", err)
 	}
@@ -87,25 +82,19 @@ func layers(repo, tag string) {
 	}
 }
 
-func pull(repo, tag string) {
-	token, err := getAuthToken(repo)
-	if err != nil {
-		log.Fatalf("Couldn't get auth token: %v", err)
-	}
-
-	manifest, err := getManifest(token, repo, tag)
+func pull(t tokenGetter, repo, tag string) {
+	manifest, err := getManifest(t, repo, tag)
 	if err != nil {
 		log.Fatalf("Couldn't get the manifest: %v", err)
 	}
 
-	imageLayers, err := getBlobs(token, repo, manifest.FsLayers)
+	imageLayers, err := getBlobs(t, repo, manifest.FsLayers)
 	if err != nil {
 		log.Fatalf("Couldn't get the layers' blobs: %v", err)
 	}
 
 	dirName := fmt.Sprintf("%s_%s", strings.Replace(repo, "/", "_", -1), tag)
-	err = os.Mkdir(dirName, 0777)
-	if err != nil {
+	if err = os.Mkdir(dirName, 0777); err != nil {
 		log.Fatalf("Couldn't create directory for downloaded layers: %v", err)
 	}
 

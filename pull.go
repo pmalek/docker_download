@@ -4,14 +4,16 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strconv"
 )
 
 // DockerAPIPullBlob is the URL for getting the layers for particular image
-// @param1 is the name of the repository
-// @param2 is the digest of the layer
-const DockerAPIPullBlob = "https://registry.hub.docker.com/v2/%s/blobs/%s"
+// @param1 is the URL of the registry
+// @param2 is the name of the repository
+// @param3 is the digest of the layer
+const DockerAPIPullBlobf = "https://%s/v2/%s/blobs/%s"
 
 type imageLayer struct {
 	digest string
@@ -30,26 +32,35 @@ func (il *imageLayers) isLayerAlreadyCached(digest string) bool {
 	return false
 }
 
-func getBlobs(token, repo string, fsLayers FsLayers) (imageLayers, error) {
-	layers := make(imageLayers, 0, len(fsLayers))
+func getBlobs(t tokenGetter, repo string, fsLayers FsLayers) (imageLayers, error) {
+	registryURL, image, err := repoNameToRegistryImageTuple(repo)
+	if err != nil {
+		return nil, err
+	}
 
-	//body, _ := ioutil.ReadAll(resp.Body)
+	token, err := t.get(registryURL, image)
+	if err != nil {
+		log.Fatalf("Couldn't get auth token: %v", err)
+	}
+
+	layers := make(imageLayers, 0, len(fsLayers))
 
 	for _, layerDigest := range fsLayers {
 		if layers.isLayerAlreadyCached(layerDigest.BlobSum) {
 			continue
 		}
 
-		URL := fmt.Sprintf(DockerAPIPullBlob, repo, layerDigest.BlobSum)
+		URL := fmt.Sprintf(DockerAPIPullBlobf, registryURL, image, layerDigest.BlobSum)
 
 		fmt.Printf("Downloading %v...\n", URL)
 
 		req, _ := http.NewRequest(http.MethodGet, URL, nil)
-		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
-		req.Header.Set("Host", DockerHubURL)
+		if len(token) > 0 {
+			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+		}
 		res, err := http.DefaultClient.Do(req)
 		if err != nil {
-			return nil, fmt.Errorf("Fail during HTTP GET %s: %v", DockerAPIPullBlob, err)
+			return nil, fmt.Errorf("Fail during HTTP GET %s: %v", DockerAPIPullBlobf, err)
 		}
 		defer res.Body.Close()
 
