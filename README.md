@@ -16,7 +16,6 @@ How to use:
 
     Flags:
       -h, --help           help for docker_download
-          --image string   image to get info/image on from docker registry
           --tag string     tag of the image to get info/imageimage on from docker registry
 
     Use "docker_download [command] --help" for more information about a command.
@@ -24,7 +23,7 @@ How to use:
 
 Layers:
 
-    ./docker_download layers --image=mysql/mysql-server --tag=5.6.23
+    ./docker_download layers mysql/mysql-server --tag=5.6.23
 
     SchemaVersion: 1
     FsLayers
@@ -56,7 +55,7 @@ Layers:
 
 Pull:
 
-     ./docker_download pull --image mysql/mysql-server --tag 5.6.23
+     ./docker_download pull mysql/mysql-server --tag 5.6.23
      Downloading https://registry.hub.docker.com/v2/mysql/mysql-server/blobs/sha256:a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4...
      Layer sha256:a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4 with size 32B
      Downloading https://registry.hub.docker.com/v2/mysql/mysql-server/blobs/sha256:c45bb0e60064f776fdbee153e8c57ee9781273427dfc045a9e4f26fe230a33bb...

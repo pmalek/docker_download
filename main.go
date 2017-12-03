@@ -11,49 +11,51 @@ import (
 )
 
 func main() {
+	appName := strings.TrimPrefix(os.Args[0], "./")
+
 	/*
 	 *docker_download layers
 	 */
 
 	var cmdLayers = &cobra.Command{
-		Use:   "layers",
+		Use:   "layers [image]",
 		Short: "Get layers info about specified image",
 		Long: `Downloads docker layers info about specified image
 at specified tag and prints them on screen.`,
+		Args: cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			imageF := cmd.Flag("image")
+			image := args[0]
 			tagF := cmd.Flag("tag")
-			layers(imageF.Value.String(), tagF.Value.String())
+			layers(image, tagF.Value.String())
 		},
 	}
-
-	cmdLayers.Example = "docker_download layers --image mysql/mysql-server --tag 5.6.23"
+	cmdLayers.Example = appName + " layers mysql/mysql-server --tag 5.6.23"
 
 	/*
 	 *docker_download pull
 	 */
 
 	var cmdPull = &cobra.Command{
-		Use:   "pull",
+		Use:   "pull [image]",
 		Short: "Downloads layers from specified image",
 		Long: `Downloads docker layers from specified image
 at specified tag and saves them in directory named 
 by repo name and tag name in the current directory.`,
+		Args: cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			imageF := cmd.Flag("image")
+			image := args[0]
 			tagF := cmd.Flag("tag")
-			pull(imageF.Value.String(), tagF.Value.String())
+			pull(image, tagF.Value.String())
 		},
 	}
+	cmdPull.Example = appName + " pull mysql/mysql-server --tag 5.6.23"
 
 	/*
 	 *root
 	 */
 
 	var rootCmd = &cobra.Command{Use: "docker_download"}
-	rootCmd.PersistentFlags().String("image", "", "image to get info/image on from docker registry")
-	rootCmd.MarkPersistentFlagRequired("image")
-	rootCmd.PersistentFlags().String("tag", "", "tag of the image to get info/imageimage on from docker registry")
+	rootCmd.PersistentFlags().String("tag", "", "tag of the image to get info on from docker registry")
 	rootCmd.MarkPersistentFlagRequired("tag")
 
 	rootCmd.AddCommand(cmdLayers, cmdPull)
